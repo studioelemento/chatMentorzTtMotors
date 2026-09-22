@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 dark:bg-dark-900 dark:text-gray-100 font-sans antialiased transition-colors duration-300;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/80 dark:bg-dark-800/80 backdrop-blur-md border border-gray-200 dark:border-dark-700 rounded-xl shadow-xl transition-colors duration-300;
+  }
+  
+  .input-field {
+    @apply w-full bg-white dark:bg-dark-900 border border-gray-300 dark:border-dark-700 rounded-lg px-4 py-2.5 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-whatsapp/50 focus:border-transparent transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-whatsapp hover:bg-whatsapp-dark text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg shadow-whatsapp/20 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2;
+  }
+}
+
+
+/* React Datepicker Customizations */
+.react-datepicker-wrapper { width: 100%; }
+html .react-datepicker { @apply bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 font-sans shadow-xl !important; }
+html .react-datepicker__header { @apply bg-gray-50 dark:bg-dark-900 border-b border-gray-200 dark:border-dark-700 !important; }
+html .react-datepicker__current-month, html .react-datepicker-time__header, html .react-datepicker-year-header { @apply text-gray-900 dark:text-gray-200 font-semibold !important; }
+html .react-datepicker__day-name, html .react-datepicker__day, html .react-datepicker__time-name { @apply text-gray-700 dark:text-gray-300 !important; }
+html .react-datepicker__day:hover, html .react-datepicker__month-text:hover, html .react-datepicker__quarter-text:hover, html .react-datepicker__year-text:hover { @apply bg-gray-100 dark:bg-dark-700 !important; }
+html .react-datepicker__day--selected, html .react-datepicker__day--in-selecting-range, html .react-datepicker__day--in-range, html .react-datepicker__month-text--selected, html .react-datepicker__month-text--in-selecting-range, html .react-datepicker__month-text--in-range, html .react-datepicker__quarter-text--selected, html .react-datepicker__quarter-text--in-selecting-range, html .react-datepicker__quarter-text--in-range, html .react-datepicker__year-text--selected, html .react-datepicker__year-text--in-selecting-range, html .react-datepicker__year-text--in-range { @apply bg-whatsapp text-white !important; }
+html .react-datepicker__day--keyboard-selected, html .react-datepicker__month-text--keyboard-selected, html .react-datepicker__quarter-text--keyboard-selected, html .react-datepicker__year-text--keyboard-selected { @apply bg-whatsapp/70 text-white !important; }
+html .react-datepicker__month-text, html .react-datepicker__quarter-text, html .react-datepicker__year-text { @apply text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700 rounded py-1 !important; }
+html .react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle::before, html .react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle::after { border-bottom-color: #1a1d24 !important; }
+html .react-datepicker-popper[data-placement^="top"] .react-datepicker__triangle::before, html .react-datepicker-popper[data-placement^="top"] .react-datepicker__triangle::after { border-top-color: #1a1d24 !important; }
+html .react-datepicker__navigation-icon::before { border-color: #9ca3af !important; }
+html .react-datepicker__navigation:hover *::before { border-color: #f3f4f6 !important; }
+
