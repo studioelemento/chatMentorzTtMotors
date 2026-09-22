@@ -6,13 +6,22 @@ import { format } from 'date-fns';
 import { useUsageData } from '../hooks/useUsageData';
 import { useTableFilter } from '../hooks/useTableFilter';
 
+const formatDateStr = (dateStr) => {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  if (!y || !m || !d) return dateStr;
+  return `${m}/${d}/${y.slice(2)}`;
+};
+
 export default function AdminDashboard() {
   const { 
     data, addRecord, deleteRecord,
     payments, addPayment, deletePayment,
-    creditLimit, updateCreditLimit
+    creditLimit, updateCreditLimit,
+    loading
   } = useUsageData();
   
+
   const {
     monthFilter,
     dateFilter,
@@ -34,13 +43,13 @@ export default function AdminDashboard() {
   });
 
   const [paymentData, setPaymentData] = useState({ date: new Date(), amount: '' });
-  const [limitInput, setLimitInput] = useState(creditLimit.toString());
 
   const totalAmountSpent = data.reduce((acc, curr) => acc + (Number(curr.amountSpent) || 0), 0);
   const totalCredited = payments.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   const rawAmountDue = totalAmountSpent - totalCredited;
-  const amountDue = Math.max(0, rawAmountDue);
+  const amountDue = rawAmountDue;
   const isOverLimit = rawAmountDue >= creditLimit;
+  const availableCredit = creditLimit - rawAmountDue;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -83,10 +92,13 @@ export default function AdminDashboard() {
     setPaymentData({ date: new Date(), amount: '' });
   };
 
-  const handleLimitSubmit = (e) => {
-    e.preventDefault();
-    if (limitInput) updateCreditLimit(limitInput);
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-whatsapp"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -128,8 +140,8 @@ export default function AdminDashboard() {
             <Settings className="w-8 h-8" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium truncate text-gray-500 dark:text-gray-400" title="Credit Limit">Credit Limit</p>
-            <h4 className="text-2xl font-bold truncate text-gray-900 dark:text-gray-100" title={`₹${creditLimit.toLocaleString('en-IN', {minimumFractionDigits: 2})}`}>₹{creditLimit.toLocaleString('en-IN', {minimumFractionDigits: 2})}</h4>
+            <p className="text-sm font-medium truncate text-gray-500 dark:text-gray-400" title="Available Credit Limit">Available Credit Limit</p>
+            <h4 className="text-2xl font-bold truncate text-gray-900 dark:text-gray-100" title={`₹${availableCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}`}>₹{availableCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}</h4>
           </div>
         </div>
       </div>
@@ -147,7 +159,7 @@ export default function AdminDashboard() {
                 <DatePicker 
                   selected={paymentData.date}
                   onChange={(date) => setPaymentData(p => ({ ...p, date }))}
-                  dateFormat="yyyy-MM-dd"
+                  dateFormat="MM/dd/yy"
                   className="input-field"
                   required
                 />
@@ -176,7 +188,7 @@ export default function AdminDashboard() {
                 {payments.map(payment => (
                   <div key={payment.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-dark-900/50 border border-gray-200 dark:border-dark-700/50 hover:bg-gray-100 dark:hover:bg-dark-700/30 transition-colors">
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-200">{payment.date}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-200">{formatDateStr(payment.date)}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Credited</p>
                     </div>
                     <div className="flex items-center gap-4">
@@ -195,29 +207,6 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
-
-        <div className="glass-panel p-6 relative z-20">
-          <h3 className="text-xl font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-            <Settings className="w-5 h-5 text-gray-400 dark:text-gray-500" />
-            Update Credit Limit
-          </h3>
-          <form onSubmit={handleLimitSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Available Credit Limit (₹)</label>
-              <input 
-                type="number" 
-                placeholder="0.00"
-                step="0.01"
-                value={limitInput}
-                onChange={(e) => setLimitInput(e.target.value)}
-                className="input-field"
-                min="0"
-                required
-              />
-            </div>
-            <button type="submit" className="btn-primary w-full bg-gray-200 dark:bg-dark-700 hover:bg-gray-300 dark:hover:bg-dark-600 text-gray-900 dark:text-white shadow-none">Set Credit Limit</button>
-          </form>
-        </div>
       </div>
 
       <div className="glass-panel p-6 relative z-10">
@@ -232,7 +221,7 @@ export default function AdminDashboard() {
             <DatePicker 
               selected={formData.date}
               onChange={handleFormDateChange}
-              dateFormat="yyyy-MM-dd"
+              dateFormat="MM/dd/yy"
               className="input-field"
               required
             />
@@ -323,7 +312,7 @@ export default function AdminDashboard() {
               <DatePicker
                 selected={dateFilter}
                 onChange={handleDateChange}
-                dateFormat="yyyy-MM-dd"
+                dateFormat="MM/dd/yy"
                 placeholderText="Select Date"
                 className="input-field py-1.5 text-sm"
               />
@@ -363,7 +352,7 @@ export default function AdminDashboard() {
               ) : (
                 paginatedData.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-dark-700/20 transition-colors align-top">
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-300">{row.date}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-300">{formatDateStr(row.date)}</td>
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-200">{row.name}</td>
                     <td className="px-6 py-4 text-gray-900 dark:text-gray-300">{row.totalSent.toLocaleString()}</td>
                     <td className="px-6 py-4 text-gray-900 dark:text-gray-300">{row.deliveredNo.toLocaleString()}</td>

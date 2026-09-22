@@ -7,6 +7,15 @@ export default {
   ],
   theme: {
     extend: {
+      keyframes: {
+        'zoom-pulse': {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.08)' },
+        }
+      },
+      animation: {
+        'zoom-pulse': 'zoom-pulse 1s ease-in-out infinite',
+      },
       colors: {
         dark: {
           900: '#0f172a',

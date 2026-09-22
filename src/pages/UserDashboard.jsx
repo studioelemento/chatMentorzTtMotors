@@ -1,11 +1,20 @@
+import { useState, useEffect } from 'react';
 import { MessageCircle, CheckCircle2, DollarSign, Activity, Filter, ChevronLeft, ChevronRight, X, CreditCard, AlertTriangle, Settings } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useUsageData } from '../hooks/useUsageData';
 import { useTableFilter } from '../hooks/useTableFilter';
 
+const formatDateStr = (dateStr) => {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  if (!y || !m || !d) return dateStr;
+  return `${m}/${d}/${y.slice(2)}`;
+};
+
 export default function UserDashboard() {
-  const { data, payments, creditLimit } = useUsageData();
+  const { data, payments, creditLimit, loading } = useUsageData();
+
 
   const {
     monthFilter,
@@ -30,9 +39,18 @@ export default function UserDashboard() {
   const totalAmountSpentLifetime = data.reduce((acc, curr) => acc + (Number(curr.amountSpent) || 0), 0);
   const totalCredited = payments.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   const rawAmountDue = totalAmountSpentLifetime - totalCredited;
-  const amountDue = Math.max(0, rawAmountDue);
+  const amountDue = rawAmountDue;
   const isOverLimit = rawAmountDue >= creditLimit;
-  const availableCredit = Math.max(0, creditLimit - rawAmountDue);
+  const availableCredit = creditLimit - rawAmountDue;
+
+  const [showPopup, setShowPopup] = useState(false);
+
+  useEffect(() => {
+    // Show popup if they have no available credit (meaning they owe money or hit the limit)
+    if (availableCredit <= 0 && data.length > 0) {
+      setShowPopup(true);
+    }
+  }, [availableCredit, data.length]);
 
   const stats = [
     { label: 'Total Messages Sent', value: totalSent.toLocaleString(), icon: MessageCircle, color: 'text-blue-400', bg: 'bg-blue-400/10' },
@@ -41,9 +59,17 @@ export default function UserDashboard() {
     { label: 'Filtered Amount Spent', value: `₹${totalAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
     { label: 'Total Amount Spent Till Now', value: `₹${totalAmountSpentLifetime.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: DollarSign, color: 'text-blue-400', bg: 'bg-blue-400/10' },
     { label: 'Total Amount Credited', value: `₹${totalCredited.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: CreditCard, color: 'text-whatsapp', bg: 'bg-whatsapp/10' },
-    { label: 'Amount Due', value: `₹${amountDue.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: AlertTriangle, color: isOverLimit ? 'text-red-400' : 'text-orange-400', bg: isOverLimit ? 'bg-red-500/20' : 'bg-orange-400/10', wrapper: isOverLimit ? 'bg-red-500/10 border-red-500/50' : '', textOverride: isOverLimit ? 'text-red-400/80' : '', valueOverride: isOverLimit ? 'text-red-400' : '' },
-    { label: 'Available Credit', value: `₹${availableCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: Settings, color: isOverLimit ? 'text-red-400' : 'text-emerald-400', bg: isOverLimit ? 'bg-red-500/10' : 'bg-emerald-400/10' },
+    { label: 'Amount Due', value: `₹${amountDue.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: AlertTriangle, color: isOverLimit ? 'text-red-400' : 'text-orange-400', bg: isOverLimit ? 'bg-red-500/20' : 'bg-orange-400/10', wrapper: (amountDue < 0 ? 'animate-zoom-pulse shadow-[0_0_15px_rgba(249,115,22,0.3)] border border-orange-500/30 z-20 ' : '') + (isOverLimit ? 'bg-red-500/10 border-red-500/50' : ''), textOverride: isOverLimit ? 'text-red-400/80' : '', valueOverride: isOverLimit ? 'text-red-400' : '' },
+    { label: 'Available Credit', value: `₹${availableCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: Settings, color: isOverLimit ? 'text-red-400' : 'text-emerald-400', bg: isOverLimit ? 'bg-red-500/10' : 'bg-emerald-400/10', wrapper: availableCredit < 0 ? 'animate-zoom-pulse shadow-[0_0_15px_rgba(239,68,68,0.3)] border border-red-500/30 z-20 bg-red-500/5' : '', textOverride: availableCredit < 0 ? 'text-red-500/80 dark:text-red-400/80' : '', valueOverride: availableCredit < 0 ? 'text-red-600 dark:text-red-500' : '' },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-whatsapp"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -89,7 +115,7 @@ export default function UserDashboard() {
               <DatePicker
                 selected={dateFilter}
                 onChange={handleDateChange}
-                dateFormat="yyyy-MM-dd"
+                dateFormat="MM/dd/yy"
                 placeholderText="Select Date"
                 className="input-field py-1.5 text-sm"
               />
@@ -131,7 +157,7 @@ export default function UserDashboard() {
                   const rate = row.totalSent > 0 ? (row.deliveredNo / row.totalSent) * 100 : 0;
                   return (
                     <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-dark-700/20 transition-colors align-top">
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-300">{row.date}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-300">{formatDateStr(row.date)}</td>
                       <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-200">{row.name}</td>
                       <td className="px-6 py-4 text-gray-900 dark:text-gray-300">{row.totalSent.toLocaleString()}</td>
                       <td className="px-6 py-4 text-gray-900 dark:text-gray-300">{row.deliveredNo.toLocaleString()}</td>
@@ -180,6 +206,29 @@ export default function UserDashboard() {
           </div>
         )}
       </div>
+
+      {/* Alert Modal */}
+      {showPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-dark-800 p-6 rounded-2xl shadow-xl max-w-sm w-full animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-3 bg-red-100 dark:bg-red-500/20 rounded-full">
+                <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Attention Required</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Your available credit limit has been exhausted. Please settle your amount due.
+              </p>
+              <button 
+                onClick={() => setShowPopup(false)}
+                className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

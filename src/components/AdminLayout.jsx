@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { LayoutDashboard, Users, Menu, X, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import Logo from '../assets/Chatmentorz.png';
 
 export default function AdminLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,10 +18,8 @@ export default function AdminLayout() {
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 z-20 absolute top-0 w-full transition-colors duration-300">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-whatsapp/10 dark:bg-whatsapp/20 flex items-center justify-center">
-            <LayoutDashboard className="text-whatsapp w-5 h-5" />
-          </div>
-          <h1 className="font-bold text-gray-900 dark:text-gray-100 text-lg">Admin Panel</h1>
+          <img src={Logo} alt="Chatmentorz" className="h-8 object-contain dark:bg-gray-100 dark:p-1 dark:rounded-md" />
+          <span className="text-xs font-bold text-whatsapp uppercase tracking-wider hidden sm:block">Admin</span>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={toggleTheme} className="p-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors">
@@ -46,14 +45,9 @@ export default function AdminLayout() {
         md:relative md:translate-x-0
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        <div className="p-6 border-b border-gray-200 dark:border-dark-700 flex items-center gap-3 transition-colors duration-300">
-          <div className="w-10 h-10 rounded-lg bg-whatsapp/10 dark:bg-whatsapp/20 flex items-center justify-center">
-            <LayoutDashboard className="text-whatsapp w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="font-bold text-gray-900 dark:text-gray-100 leading-tight">Titanium Motors</h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Admin Panel</p>
-          </div>
+        <div className="p-6 border-b border-gray-200 dark:border-dark-700 flex flex-col items-center justify-center gap-3 transition-colors duration-300">
+          <img src={Logo} alt="Chatmentorz" className="h-10 object-contain dark:bg-gray-100 dark:p-1.5 dark:rounded-lg" />
+          <span className="text-[10px] font-bold text-whatsapp uppercase tracking-widest bg-whatsapp/10 px-2.5 py-1 rounded-full">Admin Panel</span>
         </div>
         
         <nav className="flex-1 p-4 space-y-2">
