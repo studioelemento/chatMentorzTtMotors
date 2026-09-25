@@ -39,7 +39,7 @@ export default function UserDashboard() {
   const totalAmountSpentLifetime = data.reduce((acc, curr) => acc + (Number(curr.amountSpent) || 0), 0);
   const totalCredited = payments.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   const rawAmountDue = totalAmountSpentLifetime - totalCredited;
-  const amountDue = rawAmountDue;
+  const amountDue = Math.max(0, rawAmountDue);
   const isOverLimit = rawAmountDue >= creditLimit;
   const availableCredit = creditLimit - rawAmountDue;
 
@@ -53,6 +53,7 @@ export default function UserDashboard() {
   }, [availableCredit, data.length]);
 
   const stats = [
+    { label: 'Available Credit Limit', value: `₹${availableCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: Settings, color: availableCredit < 0 ? 'text-red-500' : availableCredit <= 2000 ? 'text-orange-500' : 'text-purple-400', bg: availableCredit < 0 ? 'bg-red-500/20' : availableCredit <= 2000 ? 'bg-orange-500/20' : 'bg-purple-400/10', wrapper: availableCredit < 0 ? 'animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.4)] border border-red-500/50 bg-red-500/5 z-20' : availableCredit <= 2000 ? 'border border-orange-500/30 bg-orange-500/5' : '', textOverride: availableCredit < 0 ? 'text-red-500/80 dark:text-red-400/80' : availableCredit <= 2000 ? 'text-orange-500/80 dark:text-orange-400/80' : '', valueOverride: availableCredit < 0 ? 'text-red-600 dark:text-red-500' : availableCredit <= 2000 ? 'text-orange-600 dark:text-orange-400' : '' },
     { label: 'Total Messages Sent', value: totalSent.toLocaleString(), icon: MessageCircle, color: 'text-blue-400', bg: 'bg-blue-400/10' },
     { label: 'Total Delivered', value: totalDelivered.toLocaleString(), icon: CheckCircle2, color: 'text-whatsapp', bg: 'bg-whatsapp/10' },
     { label: 'Delivery Rate', value: `${deliveryRate}%`, icon: Activity, color: 'text-purple-400', bg: 'bg-purple-400/10' },
@@ -60,7 +61,6 @@ export default function UserDashboard() {
     { label: 'Total Amount Spent Till Now', value: `₹${totalAmountSpentLifetime.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: DollarSign, color: 'text-blue-400', bg: 'bg-blue-400/10' },
     { label: 'Total Amount Credited', value: `₹${totalCredited.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: CreditCard, color: 'text-whatsapp', bg: 'bg-whatsapp/10' },
     { label: 'Amount Due', value: `₹${amountDue.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: AlertTriangle, color: isOverLimit ? 'text-red-400' : 'text-orange-400', bg: isOverLimit ? 'bg-red-500/20' : 'bg-orange-400/10', wrapper: (amountDue < 0 ? 'animate-zoom-pulse shadow-[0_0_15px_rgba(249,115,22,0.3)] border border-orange-500/30 z-20 ' : '') + (isOverLimit ? 'bg-red-500/10 border-red-500/50' : ''), textOverride: isOverLimit ? 'text-red-400/80' : '', valueOverride: isOverLimit ? 'text-red-400' : '' },
-    { label: 'Available Credit', value: `₹${availableCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}`, icon: Settings, color: isOverLimit ? 'text-red-400' : 'text-emerald-400', bg: isOverLimit ? 'bg-red-500/10' : 'bg-emerald-400/10', wrapper: availableCredit < 0 ? 'animate-zoom-pulse shadow-[0_0_15px_rgba(239,68,68,0.3)] border border-red-500/30 z-20 bg-red-500/5' : '', textOverride: availableCredit < 0 ? 'text-red-500/80 dark:text-red-400/80' : '', valueOverride: availableCredit < 0 ? 'text-red-600 dark:text-red-500' : '' },
   ];
 
   if (loading) {
@@ -108,6 +108,8 @@ export default function UserDashboard() {
                 showMonthYearPicker
                 placeholderText="Select Month"
                 className="input-field py-1.5 pl-9 text-sm"
+                withPortal={window.innerWidth < 768}
+                onFocus={(e) => window.innerWidth < 768 && e.target.blur()}
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto relative">
@@ -118,6 +120,8 @@ export default function UserDashboard() {
                 dateFormat="MM/dd/yy"
                 placeholderText="Select Date"
                 className="input-field py-1.5 text-sm"
+                withPortal={window.innerWidth < 768}
+                onFocus={(e) => window.innerWidth < 768 && e.target.blur()}
               />
             </div>
             {(monthFilter || dateFilter) && (

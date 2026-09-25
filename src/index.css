@@ -25,6 +25,7 @@
 
 /* React Datepicker Customizations */
 .react-datepicker-wrapper { width: 100%; }
+html .react-datepicker-popper { z-index: 9999 !important; }
 html .react-datepicker { @apply bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 font-sans shadow-xl !important; }
 html .react-datepicker__header { @apply bg-gray-50 dark:bg-dark-900 border-b border-gray-200 dark:border-dark-700 !important; }
 html .react-datepicker__current-month, html .react-datepicker-time__header, html .react-datepicker-year-header { @apply text-gray-900 dark:text-gray-200 font-semibold !important; }

@@ -47,7 +47,7 @@ export default function AdminDashboard() {
   const totalAmountSpent = data.reduce((acc, curr) => acc + (Number(curr.amountSpent) || 0), 0);
   const totalCredited = payments.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   const rawAmountDue = totalAmountSpent - totalCredited;
-  const amountDue = rawAmountDue;
+  const amountDue = Math.max(0, rawAmountDue);
   const isOverLimit = rawAmountDue >= creditLimit;
   const availableCredit = creditLimit - rawAmountDue;
 
@@ -135,13 +135,13 @@ export default function AdminDashboard() {
             <h4 className={`text-2xl font-bold truncate ${isOverLimit ? 'text-red-500 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'}`} title={`₹${amountDue.toLocaleString('en-IN', {minimumFractionDigits: 2})}`}>₹{amountDue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</h4>
           </div>
         </div>
-        <div className="glass-panel p-6 flex items-center gap-4 hover:-translate-y-1 transition-all duration-300">
-          <div className="p-4 rounded-xl shrink-0 bg-purple-500/10 dark:bg-purple-400/10 text-purple-600 dark:text-purple-400">
+        <div className={`glass-panel p-6 flex items-center gap-4 hover:-translate-y-1 transition-all duration-300 ${availableCredit < 0 ? 'bg-red-500/10 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse' : availableCredit <= 2000 ? 'bg-orange-500/10 border border-orange-500/30' : ''}`}>
+          <div className={`p-4 rounded-xl shrink-0 ${availableCredit < 0 ? 'bg-red-500/20 text-red-500 dark:text-red-400' : availableCredit <= 2000 ? 'bg-orange-500/20 text-orange-500 dark:text-orange-400' : 'bg-purple-500/10 dark:bg-purple-400/10 text-purple-600 dark:text-purple-400'}`}>
             <Settings className="w-8 h-8" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium truncate text-gray-500 dark:text-gray-400" title="Available Credit Limit">Available Credit Limit</p>
-            <h4 className="text-2xl font-bold truncate text-gray-900 dark:text-gray-100" title={`₹${availableCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}`}>₹{availableCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}</h4>
+            <p className={`text-sm font-medium truncate ${availableCredit < 0 ? 'text-red-500/80 dark:text-red-400/80' : availableCredit <= 2000 ? 'text-orange-500/80 dark:text-orange-400/80' : 'text-gray-500 dark:text-gray-400'}`} title="Available Credit Limit">Available Credit Limit</p>
+            <h4 className={`text-2xl font-bold truncate ${availableCredit < 0 ? 'text-red-600 dark:text-red-500' : availableCredit <= 2000 ? 'text-orange-500 dark:text-orange-400' : 'text-gray-900 dark:text-gray-100'}`} title={`₹${availableCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}`}>₹{availableCredit.toLocaleString('en-IN', {minimumFractionDigits: 2})}</h4>
           </div>
         </div>
       </div>
@@ -161,6 +161,8 @@ export default function AdminDashboard() {
                   onChange={(date) => setPaymentData(p => ({ ...p, date }))}
                   dateFormat="MM/dd/yy"
                   className="input-field"
+                  withPortal={window.innerWidth < 768}
+                  onFocus={(e) => window.innerWidth < 768 && e.target.blur()}
                   required
                 />
               </div>
@@ -209,7 +211,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="glass-panel p-6 relative z-10">
+      <div className="glass-panel p-6 relative z-40">
         <h3 className="text-xl font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-gray-100">
           <Plus className="w-5 h-5 text-whatsapp" />
           Add Usage Details
@@ -223,6 +225,8 @@ export default function AdminDashboard() {
               onChange={handleFormDateChange}
               dateFormat="MM/dd/yy"
               className="input-field"
+              withPortal={window.innerWidth < 768}
+              onFocus={(e) => window.innerWidth < 768 && e.target.blur()}
               required
             />
           </div>
@@ -305,6 +309,8 @@ export default function AdminDashboard() {
                 showMonthYearPicker
                 placeholderText="Select Month"
                 className="input-field py-1.5 pl-9 text-sm"
+                withPortal={window.innerWidth < 768}
+                onFocus={(e) => window.innerWidth < 768 && e.target.blur()}
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto relative">
@@ -315,6 +321,8 @@ export default function AdminDashboard() {
                 dateFormat="MM/dd/yy"
                 placeholderText="Select Date"
                 className="input-field py-1.5 text-sm"
+                withPortal={window.innerWidth < 768}
+                onFocus={(e) => window.innerWidth < 768 && e.target.blur()}
               />
             </div>
             {(monthFilter || dateFilter) && (

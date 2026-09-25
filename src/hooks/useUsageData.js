@@ -5,7 +5,7 @@ import { collection, onSnapshot, addDoc, deleteDoc, doc, setDoc, query, orderBy 
 export function useUsageData() {
   const [data, setData] = useState([]);
   const [payments, setPayments] = useState([]);
-  const [creditLimit, setCreditLimit] = useState(50000);
+  const [creditLimit, setCreditLimit] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -14,14 +14,14 @@ export function useUsageData() {
     setError(null);
 
     // Listen to Usage Records
-    const qData = query(collection(db, 'usage_records'), orderBy('createdAt', 'desc'));
+    const qData = query(collection(db, 'usage_records'), orderBy('date', 'desc'));
     const unsubscribeData = onSnapshot(qData, (snapshot) => {
       const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setData(records);
     }, (err) => setError(err.message));
 
     // Listen to Payments
-    const qPayments = query(collection(db, 'payments'), orderBy('createdAt', 'desc'));
+    const qPayments = query(collection(db, 'payments'), orderBy('date', 'desc'));
     const unsubscribePayments = onSnapshot(qPayments, (snapshot) => {
       const paymentRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPayments(paymentRecords);
@@ -30,10 +30,14 @@ export function useUsageData() {
     // Listen to Credit Limit
     const unsubscribeLimit = onSnapshot(doc(db, 'settings', 'creditLimit'), (docSnap) => {
       if (docSnap.exists()) {
+        // OVERRIDE the old 50000 database value back to 0
+        if (docSnap.data().value === 50000) {
+           setDoc(doc(db, 'settings', 'creditLimit'), { value: 0 });
+        }
         setCreditLimit(docSnap.data().value);
       } else {
         // Initialize if it doesn't exist
-        setDoc(doc(db, 'settings', 'creditLimit'), { value: 50000 });
+        setDoc(doc(db, 'settings', 'creditLimit'), { value: 0 });
       }
       setLoading(false);
     }, (err) => {
@@ -99,7 +103,7 @@ export function useUsageData() {
     }
   };
 
-  return { 
+  return {
     data, addRecord, deleteRecord,
     payments, addPayment, deletePayment,
     creditLimit, updateCreditLimit,
